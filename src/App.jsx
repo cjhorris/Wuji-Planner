@@ -7,12 +7,12 @@ import { supabase } from "./supabase";
 const G = `
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Syne:wght@400;600;700;800&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{background:#181a22;overflow:hidden;color:#f5f6fa;font-size:16px;line-height:1.6;}
+body{background:#1d2030;overflow:hidden;color:#e8e6f0;font-size:16px;line-height:1.6;}
 ::-webkit-scrollbar{width:8px;height:8px;}
 ::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:#23253a;border-radius:8px;}
-input,select,textarea{font-family:'Syne',sans-serif;color-scheme:dark;background:#23253a;color:#f5f6fa;border:1px solid #23253a;font-size:15px;}
-button{font-family:'Syne',sans-serif;font-size:15px;color:#f5f6fa;background:#23253a;border:none;}
+::-webkit-scrollbar-thumb{background:#30354f;border-radius:8px;}
+input,select,textarea{font-family:'Syne',sans-serif;color-scheme:dark;background:#272b40;color:#e8e6f0;border:1px solid #30354f;font-size:15px;}
+button{font-family:'Syne',sans-serif;font-size:15px;color:#e8e6f0;background:#272b40;border:none;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 @keyframes slideIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
 .hover-row:hover{background:rgba(232,164,74,.10)!important;cursor:pointer;}
@@ -20,11 +20,17 @@ button{font-family:'Syne',sans-serif;font-size:15px;color:#f5f6fa;background:#23
 .hover-card{transition:border-color .2s,transform .2s;}
 .nav-item:hover{background:rgba(232,164,74,.10)!important;}
 .cal-cell:hover{background:rgba(232,164,74,.15)!important;}
-.btn-gold:hover{background:#c8891f!important;color:#181a22!important;}
+.btn-gold:hover{background:#c8891f!important;color:#1d2030!important;}
 .btn-ghost-dark:hover{background:rgba(232,164,74,.12)!important;color:#e8a44a!important;}
 .btn-danger:hover{background:#7f1d1d!important;color:#fff!important;}
-.tab-btn:hover{background:#23253a!important;color:#e8a44a!important;}
+.tab-btn:hover{background:#272b40!important;color:#e8a44a!important;}
 .del-btn:hover{opacity:1!important;}
+@media(max-width:700px){
+  body{overflow:auto;}
+  .app-sidebar{display:none!important;}
+  .trip-detail-panel{position:fixed!important;inset:0!important;width:100%!important;z-index:50!important;background:#1d2030!important;}
+  .trip-detail-panel .tab-btn{font-size:12px!important;padding:8px 6px!important;}
+}
 `;
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -128,7 +134,7 @@ const EMOJIS_TRIP = [
 const INP = {
   padding: "8px 12px",
   borderRadius: 8,
-  background: "#0a0c14",
+  background: "#141728",
   border: "1px solid #2a2d3a",
   color: "#d0cdc8",
   fontSize: 12,
@@ -137,7 +143,7 @@ const INP = {
 };
 const LBL = {
   fontSize: 10,
-  color: "#555",
+  color: "#7a8090",
   textTransform: "uppercase",
   letterSpacing: 0.6,
   marginBottom: 4,
@@ -145,19 +151,20 @@ const LBL = {
 };
 const ROW = { display: "flex", flexDirection: "column", gap: 4 };
 const HR = () => (
-  <div style={{ height: 1, background: "#1c1f2e", margin: "2px 0" }} />
+  <div style={{ height: 1, background: "#252840", margin: "2px 0" }} />
 );
 
 // ─── FLIGHT MODAL ─────────────────────────────────────────────────────────────
-function FlightModal({ flight, onClose, onSave, onDelete }) {
+function FlightModal({ flight, onClose, onSave, onDelete, defaultDate }) {
   const isEdit = !!flight?.id;
+  const defDate = defaultDate || new Date();
   const [f, setF] = useState(
     flight || {
       type: "outbound",
       airline: "",
       flightNo: "",
-      from: { code: "", city: "", time: "", date: new Date() },
-      to: { code: "", city: "", time: "", date: new Date() },
+      from: { code: "", city: "", time: "", date: defDate },
+      to: { code: "", city: "", time: "", date: defDate },
       duration: "",
       class: "Economy",
       seat: "",
@@ -167,7 +174,13 @@ function FlightModal({ flight, onClose, onSave, onDelete }) {
   );
   const s = (k, v) => setF((p) => ({ ...p, [k]: v }));
   const sf = (side, k, v) =>
-    setF((p) => ({ ...p, [side]: { ...p[side], [k]: v } }));
+    setF((p) => {
+      const next = { ...p, [side]: { ...p[side], [k]: v } };
+      if (side === "from" && k === "date" &&
+          p.from.date?.getTime() === p.to.date?.getTime())
+        next.to = { ...next.to, date: v };
+      return next;
+    });
   return (
     <Modal
       title={isEdit ? "✈️ Edit Flight" : "✈️ Add Flight"}
@@ -225,7 +238,7 @@ function FlightModal({ flight, onClose, onSave, onDelete }) {
         style={{
           fontSize: 10,
           fontWeight: 800,
-          color: "#444",
+          color: "#6a7080",
           letterSpacing: 0.8,
           textTransform: "uppercase",
         }}
@@ -279,7 +292,7 @@ function FlightModal({ flight, onClose, onSave, onDelete }) {
         style={{
           fontSize: 10,
           fontWeight: 800,
-          color: "#444",
+          color: "#6a7080",
           letterSpacing: 0.8,
           textTransform: "uppercase",
         }}
@@ -412,14 +425,15 @@ function FlightModal({ flight, onClose, onSave, onDelete }) {
 }
 
 // ─── HOTEL MODAL ─────────────────────────────────────────────────────────────
-function HotelModal({ hotel, onClose, onSave, onDelete }) {
+function HotelModal({ hotel, onClose, onSave, onDelete, defaultDate }) {
   const isEdit = !!hotel?.id;
+  const defDate = defaultDate || new Date();
   const [h, setH] = useState(
     hotel || {
       name: "",
       location: "",
-      checkin: new Date(),
-      checkout: new Date(),
+      checkin: defDate,
+      checkout: defDate,
       roomType: "",
       rating: 5,
       price: "",
@@ -427,7 +441,13 @@ function HotelModal({ hotel, onClose, onSave, onDelete }) {
       amenities: [],
     },
   );
-  const s = (k, v) => setH((p) => ({ ...p, [k]: v }));
+  const s = (k, v) =>
+    setH((p) => {
+      const next = { ...p, [k]: v };
+      if (k === "checkin" && p.checkin?.getTime() === p.checkout?.getTime())
+        next.checkout = v;
+      return next;
+    });
   const [am, setAm] = useState("");
   const nights = useMemo(
     () => nightsBetween(h.checkin, h.checkout),
@@ -477,7 +497,7 @@ function HotelModal({ hotel, onClose, onSave, onDelete }) {
       <div
         style={{
           padding: "7px 12px",
-          background: "#0a0c14",
+          background: "#141728",
           borderRadius: 8,
           fontSize: 12,
           color: "#e8a44a",
@@ -540,8 +560,8 @@ function HotelModal({ hotel, onClose, onSave, onDelete }) {
               key={a}
               style={{
                 fontSize: 10,
-                background: "#1c1f2e",
-                color: "#444",
+                background: "#252840",
+                color: "#6a7080",
                 padding: "3px 10px",
                 borderRadius: 20,
                 display: "flex",
@@ -836,7 +856,7 @@ function EditTripModal({ trip, onClose, onSave, onDelete }) {
                 height: 34,
                 borderRadius: 8,
                 border: `2px solid ${f.emoji === e ? "#e8a44a" : "#2a2d3a"}`,
-                background: f.emoji === e ? "#1e1a12" : "#0a0c14",
+                background: f.emoji === e ? "#1e1a12" : "#141728",
                 fontSize: 17,
                 cursor: "pointer",
               }}
@@ -944,7 +964,7 @@ function EditTripModal({ trip, onClose, onSave, onDelete }) {
                 ...f,
                 color: f.color,
                 textColor: ["#e8a44a", "#f472b6", "#84cc16"].includes(f.color)
-                  ? "#0f1117"
+                  ? "#171a28"
                   : "#fff",
                 dates: {
                   start: new Date(f.startDate + "T00:00"),
@@ -985,7 +1005,7 @@ function MiniCal({ year, month, onSelect, selected, trips }) {
             key={d}
             style={{
               fontSize: 9,
-              color: "#3a3d4e",
+              color: "#7a8499",
               textAlign: "center",
               fontWeight: 700,
             }}
@@ -1027,7 +1047,7 @@ function MiniCal({ year, month, onSelect, selected, trips }) {
                   : tripDay
                     ? `${tripDay.color}30`
                     : "transparent",
-                color: isSel ? "#0f1117" : isToday ? "#e8a44a" : "#888",
+                color: isSel ? "#171a28" : isToday ? "#e8a44a" : "#888",
                 cursor: "pointer",
                 transition: "all .1s",
               }}
@@ -1104,7 +1124,7 @@ function CalendarView({ trips, onSelectDate, onSelectTrip }) {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "13px 20px",
-          borderBottom: "1px solid #1c1f2e",
+          borderBottom: "1px solid #30354f",
           flexShrink: 0,
         }}
       >
@@ -1115,7 +1135,7 @@ function CalendarView({ trips, onSelectDate, onSelectTrip }) {
               width: 28,
               height: 28,
               borderRadius: 7,
-              background: "#1c1f2e",
+              background: "#252840",
               border: "none",
               color: "#777",
               cursor: "pointer",
@@ -1130,7 +1150,7 @@ function CalendarView({ trips, onSelectDate, onSelectTrip }) {
               width: 28,
               height: 28,
               borderRadius: 7,
-              background: "#1c1f2e",
+              background: "#252840",
               border: "none",
               color: "#777",
               cursor: "pointer",
@@ -1160,7 +1180,7 @@ function CalendarView({ trips, onSelectDate, onSelectTrip }) {
           style={{
             padding: "5px 12px",
             borderRadius: 7,
-            background: "#1c1f2e",
+            background: "#252840",
             border: "1px solid #2a2d3a",
             color: "#777",
             fontSize: 10,
@@ -1175,7 +1195,7 @@ function CalendarView({ trips, onSelectDate, onSelectTrip }) {
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(7,1fr)",
-          borderBottom: "1px solid #1c1f2e",
+          borderBottom: "1px solid #30354f",
           flexShrink: 0,
         }}
       >
@@ -1254,7 +1274,7 @@ function CalendarView({ trips, onSelectDate, onSelectTrip }) {
                   fontWeight: isToday ? 800 : 400,
                   marginBottom: 2,
                   background: isToday ? "#e8a44a" : "transparent",
-                  color: isToday ? "#0f1117" : cell.cur ? "#aaa" : "#2a2d3a",
+                  color: isToday ? "#171a28" : cell.cur ? "#aaa" : "#2a2d3a",
                 }}
               >
                 {cell.d}
@@ -1379,7 +1399,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
         width: "100%",
         padding: "8px",
         borderRadius: 9,
-        border: "1px dashed #1c1f2e",
+        border: "1px dashed #30354f",
         background: "transparent",
         color: "#2a2d3a",
         fontSize: 11,
@@ -1407,7 +1427,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
       <div
         style={{
           padding: "12px 16px",
-          borderBottom: "1px solid #1c1f2e",
+          borderBottom: "1px solid #30354f",
           flexShrink: 0,
         }}
       >
@@ -1447,7 +1467,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
               >
                 {trip.name}
               </div>
-              <div style={{ fontSize: 9, color: "#444", marginTop: 2 }}>
+              <div style={{ fontSize: 9, color: "#6a7080", marginTop: 2 }}>
                 {fmtS(trip.dates.start)} – {fmtS(trip.dates.end)} ·{" "}
                 {trip.travelers} pax
               </div>
@@ -1461,7 +1481,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                 width: 26,
                 height: 26,
                 borderRadius: 7,
-                background: "#1c1f2e",
+                background: "#252840",
                 border: "none",
                 color: "#777",
                 cursor: "pointer",
@@ -1477,7 +1497,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                 width: 26,
                 height: 26,
                 borderRadius: 7,
-                background: "#1c1f2e",
+                background: "#252840",
                 border: "none",
                 color: "#777",
                 cursor: "pointer",
@@ -1492,9 +1512,9 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                 width: 26,
                 height: 26,
                 borderRadius: 7,
-                background: "#1c1f2e",
+                background: "#252840",
                 border: "none",
-                color: "#555",
+                color: "#7a8090",
                 cursor: "pointer",
                 fontSize: 12,
               }}
@@ -1514,14 +1534,14 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
               key={x.l}
               style={{
                 flex: 1,
-                background: "#0a0c14",
+                background: "#141728",
                 borderRadius: 7,
                 padding: "5px 6px",
                 textAlign: "center",
               }}
             >
               <div style={{ fontSize: 12 }}>{x.i}</div>
-              <div style={{ fontSize: 9, color: "#555", marginTop: 1 }}>
+              <div style={{ fontSize: 9, color: "#7a8090", marginTop: 1 }}>
                 {x.l}
               </div>
             </div>
@@ -1532,7 +1552,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
           style={{
             display: "flex",
             gap: 2,
-            background: "#0a0c14",
+            background: "#141728",
             borderRadius: 8,
             padding: 3,
           }}
@@ -1548,8 +1568,8 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                 borderRadius: 6,
                 border: "none",
                 cursor: "pointer",
-                background: tab === t ? "#1c1f2e" : "transparent",
-                color: tab === t ? "#f0ece4" : "#2a2d3a",
+                background: tab === t ? "#252840" : "transparent",
+                color: tab === t ? "#f0ece4" : "#8892a4",
                 fontSize: 9,
                 fontWeight: 800,
                 textTransform: "uppercase",
@@ -1577,7 +1597,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                 }}
               >
                 <div style={{ fontSize: 26, marginBottom: 6 }}>📅</div>
-                <div style={{ fontSize: 11, color: "#444" }}>No days yet</div>
+                <div style={{ fontSize: 11, color: "#6a7080" }}>No days yet</div>
               </div>
             )}
             {trip.itinerary.map((day) => (
@@ -1585,7 +1605,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                 key={day.id}
                 style={{
                   marginBottom: 7,
-                  border: "1px solid #1c1f2e",
+                  border: "1px solid #30354f",
                   borderRadius: 10,
                   overflow: "hidden",
                 }}
@@ -1597,7 +1617,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                     alignItems: "center",
                     gap: 7,
                     padding: "8px 10px",
-                    background: "#141620",
+                    background: "#1e2235",
                     transition: "background .1s",
                   }}
                 >
@@ -1641,7 +1661,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                         {day.title}
                       </div>
                       <div
-                        style={{ fontSize: 9, color: "#3a3d4e", marginTop: 1 }}
+                        style={{ fontSize: 9, color: "#7a8499", marginTop: 1 }}
                       >
                         {fmtS(day.date)} · {day.events.length} events
                       </div>
@@ -1664,9 +1684,9 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                       width: 22,
                       height: 22,
                       borderRadius: 6,
-                      background: "#1c1f2e",
+                      background: "#252840",
                       border: "none",
-                      color: "#555",
+                      color: "#7a8090",
                       cursor: "pointer",
                       fontSize: 10,
                       flexShrink: 0,
@@ -1718,7 +1738,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                             <div
                               style={{
                                 fontSize: 11,
-                                color: "#b0adb8",
+                                color: "#c8c5d4",
                                 whiteSpace: "nowrap",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
@@ -1729,7 +1749,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                             <div
                               style={{
                                 fontSize: 9,
-                                color: "#3a3d4e",
+                                color: "#7a8499",
                                 marginTop: 1,
                               }}
                             >
@@ -1751,7 +1771,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                               borderRadius: 5,
                               background: "transparent",
                               border: "none",
-                              color: "#3a3d4e",
+                              color: "#7a8499",
                               cursor: "pointer",
                               fontSize: 9,
                               opacity: 0.5,
@@ -1773,7 +1793,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                         width: "100%",
                         padding: "5px",
                         borderRadius: 7,
-                        border: "1px dashed #1c1f2e",
+                        border: "1px dashed #30354f",
                         background: "transparent",
                         color: "#2a2d3a",
                         fontSize: 9,
@@ -1808,7 +1828,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                 }}
               >
                 <div style={{ fontSize: 26, marginBottom: 6 }}>✈️</div>
-                <div style={{ fontSize: 11, color: "#444" }}>
+                <div style={{ fontSize: 11, color: "#6a7080" }}>
                   No flights yet
                 </div>
               </div>
@@ -1818,8 +1838,8 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                 key={f.id}
                 className="hover-card"
                 style={{
-                  background: "#0f1117",
-                  border: "1px solid #1c1f2e",
+                  background: "#171a28",
+                  border: "1px solid #30354f",
                   borderRadius: 11,
                   marginBottom: 9,
                   overflow: "hidden",
@@ -1831,7 +1851,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                     justifyContent: "space-between",
                     alignItems: "center",
                     padding: "8px 12px",
-                    background: "#141620",
+                    background: "#1e2235",
                   }}
                 >
                   <div
@@ -1852,7 +1872,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                       >
                         {f.type}
                       </div>
-                      <div style={{ fontSize: 9, color: "#3a3d4e" }}>
+                      <div style={{ fontSize: 9, color: "#7a8499" }}>
                         {f.airline} · {f.flightNo}
                       </div>
                     </div>
@@ -1881,7 +1901,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                         width: 22,
                         height: 22,
                         borderRadius: 6,
-                        background: "#1c1f2e",
+                        background: "#252840",
                         border: "none",
                         color: "#666",
                         cursor: "pointer",
@@ -1912,7 +1932,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                     >
                       {f.from.code}
                     </div>
-                    <div style={{ fontSize: 9, color: "#444" }}>
+                    <div style={{ fontSize: 9, color: "#6a7080" }}>
                       {f.from.city}
                     </div>
                     <div
@@ -1930,7 +1950,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                     <div
                       style={{
                         fontSize: 9,
-                        color: "#3a3d4e",
+                        color: "#7a8499",
                         marginBottom: 3,
                       }}
                     >
@@ -1959,7 +1979,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                     <div
                       style={{
                         fontSize: 8,
-                        color: "#3a3d4e",
+                        color: "#7a8499",
                         marginTop: 3,
                       }}
                     >
@@ -1978,7 +1998,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                     >
                       {f.to.code}
                     </div>
-                    <div style={{ fontSize: 9, color: "#444" }}>
+                    <div style={{ fontSize: 9, color: "#6a7080" }}>
                       {f.to.city}
                     </div>
                     <div
@@ -1998,7 +2018,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                     display: "flex",
                     gap: 10,
                     padding: "7px 12px",
-                    borderTop: "1px solid #1c1f2e",
+                    borderTop: "1px solid #30354f",
                     flexWrap: "wrap",
                   }}
                 >
@@ -2011,7 +2031,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                       <div
                         style={{
                           fontSize: 8,
-                          color: "#3a3d4e",
+                          color: "#7a8499",
                           textTransform: "uppercase",
                           letterSpacing: 0.5,
                         }}
@@ -2052,7 +2072,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                 }}
               >
                 <div style={{ fontSize: 26, marginBottom: 6 }}>🏨</div>
-                <div style={{ fontSize: 11, color: "#444" }}>No hotels yet</div>
+                <div style={{ fontSize: 11, color: "#6a7080" }}>No hotels yet</div>
               </div>
             )}
             {trip.hotels.map((h) => (
@@ -2060,8 +2080,8 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                 key={h.id}
                 className="hover-card"
                 style={{
-                  background: "#0f1117",
-                  border: "1px solid #1c1f2e",
+                  background: "#171a28",
+                  border: "1px solid #30354f",
                   borderRadius: 11,
                   marginBottom: 9,
                   overflow: "hidden",
@@ -2073,7 +2093,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                     justifyContent: "space-between",
                     alignItems: "center",
                     padding: "9px 12px",
-                    background: "#141620",
+                    background: "#1e2235",
                   }}
                 >
                   <div>
@@ -2086,7 +2106,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                     >
                       {h.name}
                     </div>
-                    <div style={{ fontSize: 9, color: "#3a3d4e" }}>
+                    <div style={{ fontSize: 9, color: "#7a8499" }}>
                       📍 {h.location} · {"★".repeat(h.rating)}
                     </div>
                   </div>
@@ -2109,7 +2129,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                         width: 22,
                         height: 22,
                         borderRadius: 6,
-                        background: "#1c1f2e",
+                        background: "#252840",
                         border: "none",
                         color: "#666",
                         cursor: "pointer",
@@ -2120,7 +2140,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                     </button>
                   </div>
                 </div>
-                <div style={{ display: "flex", background: "#0a0c14" }}>
+                <div style={{ display: "flex", background: "#141728" }}>
                   {[
                     { l: "In", v: fmtS(h.checkin) },
                     { l: `${h.nights || "?"}n`, v: "🌙" },
@@ -2132,13 +2152,13 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                         flex: 1,
                         padding: "6px 8px",
                         textAlign: "center",
-                        borderRight: i < 2 ? "1px solid #1c1f2e" : "none",
+                        borderRight: i < 2 ? "1px solid #30354f" : "none",
                       }}
                     >
                       <div
                         style={{
                           fontSize: 8,
-                          color: "#3a3d4e",
+                          color: "#7a8499",
                           textTransform: "uppercase",
                         }}
                       >
@@ -2168,7 +2188,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                       gap: 4,
                     }}
                   >
-                    <div style={{ fontSize: 10, color: "#444" }}>
+                    <div style={{ fontSize: 10, color: "#6a7080" }}>
                       {h.roomType}
                     </div>
                     {h.confirmation && (
@@ -2201,8 +2221,8 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
                         key={a}
                         style={{
                           fontSize: 9,
-                          background: "#1c1f2e",
-                          color: "#444",
+                          background: "#252840",
+                          color: "#6a7080",
                           padding: "2px 7px",
                           borderRadius: 9,
                         }}
@@ -2239,6 +2259,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
           onClose={() => setModal(null)}
           onSave={saveFlight}
           onDelete={deleteFlight}
+          defaultDate={trip.dates.start}
         />
       )}
       {modal?.type === "editFlight" && (
@@ -2254,6 +2275,7 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
           onClose={() => setModal(null)}
           onSave={saveHotel}
           onDelete={deleteHotel}
+          defaultDate={trip.dates.start}
         />
       )}
       {modal?.type === "editHotel" && (
@@ -2303,16 +2325,23 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) 
 }
 
 // ─── NEW TRIP MODAL ───────────────────────────────────────────────────────────
-function NewTripModal({ onClose, onAdd }) {
+function NewTripModal({ onClose, onAdd, defaultDate }) {
+  const defISO = defaultDate ? toISO(defaultDate) : "";
   const [f, setF] = useState({
     name: "",
     emoji: "🌍",
-    startDate: "",
-    endDate: "",
+    startDate: defISO,
+    endDate: defISO,
     travelers: 2,
     color: "#e8a44a",
   });
-  const s = (k, v) => setF((p) => ({ ...p, [k]: v }));
+  const s = (k, v) =>
+    setF((p) => {
+      const next = { ...p, [k]: v };
+      if (k === "startDate" && (p.endDate === p.startDate || !p.endDate))
+        next.endDate = v;
+      return next;
+    });
   return (
     <Modal title="✈️ Plan New Trip" onClose={onClose} width={440}>
       <div>
@@ -2327,7 +2356,7 @@ function NewTripModal({ onClose, onAdd }) {
                 height: 34,
                 borderRadius: 8,
                 border: `2px solid ${f.emoji === e ? "#e8a44a" : "#2a2d3a"}`,
-                background: f.emoji === e ? "#1e1a12" : "#0a0c14",
+                background: f.emoji === e ? "#1e1a12" : "#141728",
                 fontSize: 17,
                 cursor: "pointer",
               }}
@@ -2417,7 +2446,7 @@ function NewTripModal({ onClose, onAdd }) {
               emoji: f.emoji,
               color: f.color,
               textColor: ["#e8a44a", "#f472b6", "#84cc16"].includes(f.color)
-                ? "#0f1117"
+                ? "#171a28"
                 : "#fff",
               dates: {
                 start: new Date(f.startDate + "T00:00"),
@@ -2562,8 +2591,8 @@ export default function WanderplanCalendar() {
     <div
       style={{
         fontFamily: "'Syne',sans-serif",
-        background: "#0f1117",
-        height: "100vh",
+        background: "#1d2030",
+        height: "100dvh",
         display: "flex",
         flexDirection: "column",
         color: "#d0cdc8",
@@ -2575,12 +2604,12 @@ export default function WanderplanCalendar() {
       {/* Loading overlay */}
       {loading && (
         <div style={{
-          position: "fixed", inset: 0, background: "#0f1117",
+          position: "fixed", inset: 0, background: "#171a28",
           display: "flex", alignItems: "center", justifyContent: "center",
           zIndex: 9999, flexDirection: "column", gap: 12,
         }}>
           <div style={{ fontSize: 28 }}>🌍</div>
-          <div style={{ fontSize: 12, color: "#3a3d4e", fontWeight: 700 }}>Loading trips…</div>
+          <div style={{ fontSize: 12, color: "#7a8499", fontWeight: 700 }}>Loading trips…</div>
         </div>
       )}
 
@@ -2588,7 +2617,7 @@ export default function WanderplanCalendar() {
       {shareMsg && (
         <div style={{
           position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
-          background: "#1c1f2e", color: "#e8a44a", padding: "8px 18px",
+          background: "#252840", color: "#e8a44a", padding: "8px 18px",
           borderRadius: 8, fontSize: 12, fontWeight: 700, zIndex: 9999,
           border: "1px solid #e8a44a40", animation: "fadeUp .2s ease",
         }}>
@@ -2604,8 +2633,8 @@ export default function WanderplanCalendar() {
           justifyContent: "space-between",
           padding: "0 16px",
           height: 48,
-          background: "#0a0c14",
-          borderBottom: "1px solid #1c1f2e",
+          background: "#141728",
+          borderBottom: "1px solid #30354f",
           flexShrink: 0,
           zIndex: 100,
         }}
@@ -2639,7 +2668,7 @@ export default function WanderplanCalendar() {
         <div
           style={{
             display: "flex",
-            background: "#141620",
+            background: "#1e2235",
             borderRadius: 8,
             padding: 3,
             gap: 2,
@@ -2657,8 +2686,8 @@ export default function WanderplanCalendar() {
                 borderRadius: 6,
                 border: "none",
                 cursor: "pointer",
-                background: activeView === v.id ? "#1c1f2e" : "transparent",
-                color: activeView === v.id ? "#f0ece4" : "#3a3d4e",
+                background: activeView === v.id ? "#252840" : "transparent",
+                color: activeView === v.id ? "#f0ece4" : "#7a8499",
                 fontSize: 11,
                 fontWeight: 700,
                 transition: "all .15s",
@@ -2680,18 +2709,19 @@ export default function WanderplanCalendar() {
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         {/* Sidebar */}
         <aside
+          className="app-sidebar"
           style={{
             width: 200,
             flexShrink: 0,
-            borderRight: "1px solid #1c1f2e",
+            borderRight: "1px solid #30354f",
             display: "flex",
             flexDirection: "column",
-            background: "#0a0c14",
+            background: "#141728",
             overflowY: "auto",
           }}
         >
           <div
-            style={{ padding: "12px 10px", borderBottom: "1px solid #1c1f2e" }}
+            style={{ padding: "12px 10px", borderBottom: "1px solid #30354f" }}
           >
             <div
               style={{
@@ -2712,16 +2742,16 @@ export default function WanderplanCalendar() {
                   width: 18,
                   height: 18,
                   borderRadius: 5,
-                  background: "#1c1f2e",
+                  background: "#252840",
                   border: "none",
-                  color: "#555",
+                  color: "#7a8090",
                   cursor: "pointer",
                   fontSize: 10,
                 }}
               >
                 ‹
               </button>
-              <div style={{ fontSize: 9, fontWeight: 700, color: "#555" }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: "#7a8090" }}>
                 {MONTHS[miniMonth].slice(0, 3)} {miniYear}
               </div>
               <button
@@ -2735,9 +2765,9 @@ export default function WanderplanCalendar() {
                   width: 18,
                   height: 18,
                   borderRadius: 5,
-                  background: "#1c1f2e",
+                  background: "#252840",
                   border: "none",
-                  color: "#555",
+                  color: "#7a8090",
                   cursor: "pointer",
                   fontSize: 10,
                 }}
@@ -2758,7 +2788,7 @@ export default function WanderplanCalendar() {
               style={{
                 fontSize: 8,
                 fontWeight: 800,
-                color: "#1c1f2e",
+                color: "#252840",
                 letterSpacing: 1.5,
                 textTransform: "uppercase",
                 marginBottom: 5,
@@ -2782,7 +2812,7 @@ export default function WanderplanCalendar() {
                   transition: "background .1s",
                   marginBottom: 1,
                   background:
-                    selectedTrip?.id === t.id ? "#1c1f2e" : "transparent",
+                    selectedTrip?.id === t.id ? "#252840" : "transparent",
                 }}
               >
                 <div
@@ -2825,7 +2855,7 @@ export default function WanderplanCalendar() {
                   style={{
                     fontSize: 8,
                     fontWeight: 800,
-                    color: "#1c1f2e",
+                    color: "#252840",
                     letterSpacing: 1.5,
                     textTransform: "uppercase",
                     marginBottom: 5,
@@ -2906,14 +2936,15 @@ export default function WanderplanCalendar() {
               />
             </div>
             <div
+              className="trip-detail-panel"
               style={{
                 width: 300,
                 flexShrink: 0,
-                borderLeft: "1px solid #1c1f2e",
+                borderLeft: "1px solid #30354f",
                 display: "flex",
                 flexDirection: "column",
                 overflow: "hidden",
-                background: "#0a0c14",
+                background: "#141728",
               }}
             >
               {selectedTrip ? (
@@ -2937,15 +2968,15 @@ export default function WanderplanCalendar() {
                   <div
                     style={{
                       padding: "11px 13px",
-                      background: "#141620",
+                      background: "#1e2235",
                       borderRadius: 10,
-                      border: "1px solid #1c1f2e",
+                      border: "1px solid #30354f",
                     }}
                   >
                     <div
                       style={{
                         fontSize: 8,
-                        color: "#3a3d4e",
+                        color: "#7a8499",
                         textTransform: "uppercase",
                         letterSpacing: 1,
                         marginBottom: 2,
@@ -2963,7 +2994,7 @@ export default function WanderplanCalendar() {
                     >
                       {selectedDate.getDate()}
                     </div>
-                    <div style={{ fontSize: 10, color: "#444" }}>
+                    <div style={{ fontSize: 10, color: "#6a7080" }}>
                       {MONTHS[selectedDate.getMonth()]}{" "}
                       {selectedDate.getFullYear()}
                     </div>
@@ -2973,7 +3004,7 @@ export default function WanderplanCalendar() {
                       <div
                         style={{
                           fontSize: 8,
-                          color: "#3a3d4e",
+                          color: "#7a8499",
                           textTransform: "uppercase",
                           letterSpacing: 1,
                           marginBottom: 6,
@@ -2991,8 +3022,8 @@ export default function WanderplanCalendar() {
                             alignItems: "center",
                             gap: 8,
                             padding: "8px 10px",
-                            background: "#141620",
-                            border: "1px solid #1c1f2e",
+                            background: "#1e2235",
+                            border: "1px solid #30354f",
                             borderRadius: 9,
                             cursor: "pointer",
                             marginBottom: 6,
@@ -3026,7 +3057,7 @@ export default function WanderplanCalendar() {
                             <div
                               style={{
                                 fontSize: 9,
-                                color: "#444",
+                                color: "#6a7080",
                                 marginTop: 1,
                               }}
                             >
@@ -3053,7 +3084,7 @@ export default function WanderplanCalendar() {
                       <div
                         style={{
                           fontSize: 10,
-                          color: "#444",
+                          color: "#6a7080",
                           textAlign: "center",
                         }}
                       >
@@ -3099,7 +3130,7 @@ export default function WanderplanCalendar() {
               >
                 My Trips
               </div>
-              <div style={{ fontSize: 11, color: "#3a3d4e", marginBottom: 18 }}>
+              <div style={{ fontSize: 11, color: "#7a8499", marginBottom: 18 }}>
                 {trips.length} trip{trips.length !== 1 ? "s" : ""} planned
               </div>
               <div
@@ -3130,8 +3161,8 @@ export default function WanderplanCalendar() {
                         setMM(t.dates.start.getMonth());
                       }}
                       style={{
-                        background: "#141620",
-                        border: "1px solid #1c1f2e",
+                        background: "#1e2235",
+                        border: "1px solid #30354f",
                         borderRadius: 13,
                         overflow: "hidden",
                         cursor: "pointer",
@@ -3182,7 +3213,7 @@ export default function WanderplanCalendar() {
                             <div
                               style={{
                                 fontSize: 9,
-                                color: "#3a3d4e",
+                                color: "#7a8499",
                                 marginTop: 2,
                               }}
                             >
@@ -3198,7 +3229,7 @@ export default function WanderplanCalendar() {
                                   ? "#10b98118"
                                   : "#e8a44a18",
                               color: isPast
-                                ? "#555"
+                                ? "#7a8090"
                                 : t.status === "upcoming"
                                   ? "#10b981"
                                   : "#e8a44a",
@@ -3228,7 +3259,7 @@ export default function WanderplanCalendar() {
                             <div
                               key={x.l}
                               style={{
-                                background: "#0f1117",
+                                background: "#171a28",
                                 borderRadius: 6,
                                 padding: "6px 7px",
                                 textAlign: "center",
@@ -3262,7 +3293,7 @@ export default function WanderplanCalendar() {
                             style={{
                               marginTop: 8,
                               fontSize: 10,
-                              color: "#3a3d4e",
+                              color: "#7a8499",
                               textAlign: "right",
                             }}
                           >
@@ -3281,7 +3312,7 @@ export default function WanderplanCalendar() {
                   onClick={() => setShowNew(true)}
                   style={{
                     background: "transparent",
-                    border: "1px dashed #1c1f2e",
+                    border: "1px dashed #30354f",
                     borderRadius: 13,
                     display: "flex",
                     flexDirection: "column",
@@ -3298,7 +3329,7 @@ export default function WanderplanCalendar() {
                       width: 40,
                       height: 40,
                       borderRadius: 11,
-                      background: "#1c1f2e",
+                      background: "#252840",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -3320,7 +3351,7 @@ export default function WanderplanCalendar() {
       </div>
 
       {showNew && (
-        <NewTripModal onClose={() => setShowNew(false)} onAdd={addTrip} />
+        <NewTripModal onClose={() => setShowNew(false)} onAdd={addTrip} defaultDate={selectedDate} />
       )}
     </div>
   );
