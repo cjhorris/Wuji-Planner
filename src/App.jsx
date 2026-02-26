@@ -29,7 +29,7 @@ button{font-family:'Syne',sans-serif;font-size:15px;color:#e8e6f0;background:#27
   body{overflow:auto;}
   .app-sidebar{display:none!important;}
   .trip-detail-panel{display:none!important;}
-  .trip-detail-panel.has-trip{display:flex!important;flex-direction:column!important;position:fixed!important;inset:0!important;width:100%!important;z-index:50!important;background:#1d2030!important;}
+  .trip-detail-panel.has-trip{display:flex!important;flex-direction:column!important;position:fixed!important;inset:0!important;width:100%!important;z-index:200!important;background:#1d2030!important;}
   .trip-detail-panel .tab-btn{font-size:13px!important;padding:9px 6px!important;min-height:40px!important;}
 }
 `;
