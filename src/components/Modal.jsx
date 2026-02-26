@@ -18,12 +18,12 @@ export default function Modal({ title, onClose, children, width = 460 }) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#181a22",
-          border: "1px solid #23253a",
+          background: "#1d2030",
+          border: "1px solid #30354f",
           borderRadius: 18,
           width,
-          maxWidth: "95vw",
-          maxHeight: "92vh",
+          maxWidth: "calc(100vw - 24px)",
+          maxHeight: "90dvh",
           display: "flex",
           flexDirection: "column",
           boxShadow: "0 40px 100px rgba(0,0,0,.7)",
@@ -36,7 +36,7 @@ export default function Modal({ title, onClose, children, width = 460 }) {
             justifyContent: "space-between",
             alignItems: "center",
             padding: "16px 20px",
-            borderBottom: "1px solid #23253a",
+            borderBottom: "1px solid #30354f",
             flexShrink: 0,
           }}
         >
@@ -56,7 +56,7 @@ export default function Modal({ title, onClose, children, width = 460 }) {
               width: 28,
               height: 28,
               borderRadius: 8,
-              background: "#23253a",
+              background: "#252840",
               border: "none",
               color: "#888",
               cursor: "pointer",

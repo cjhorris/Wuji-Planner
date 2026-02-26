@@ -11,7 +11,7 @@ body{background:#1d2030;overflow:hidden;color:#e8e6f0;font-size:16px;line-height
 ::-webkit-scrollbar{width:8px;height:8px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:#30354f;border-radius:8px;}
-input,select,textarea{font-family:'Syne',sans-serif;color-scheme:dark;background:#272b40;color:#e8e6f0;border:1px solid #30354f;font-size:15px;}
+input,select,textarea{font-family:'Syne',sans-serif;color-scheme:dark;background:#272b40;color:#e8e6f0;border:1px solid #30354f;font-size:16px;}
 button{font-family:'Syne',sans-serif;font-size:15px;color:#e8e6f0;background:#272b40;border:none;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 @keyframes slideIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
@@ -28,8 +28,9 @@ button{font-family:'Syne',sans-serif;font-size:15px;color:#e8e6f0;background:#27
 @media(max-width:700px){
   body{overflow:auto;}
   .app-sidebar{display:none!important;}
-  .trip-detail-panel{position:fixed!important;inset:0!important;width:100%!important;z-index:50!important;background:#1d2030!important;}
-  .trip-detail-panel .tab-btn{font-size:12px!important;padding:8px 6px!important;}
+  .trip-detail-panel{display:none!important;}
+  .trip-detail-panel.has-trip{display:flex!important;flex-direction:column!important;position:fixed!important;inset:0!important;width:100%!important;z-index:50!important;background:#1d2030!important;}
+  .trip-detail-panel .tab-btn{font-size:13px!important;padding:9px 6px!important;min-height:40px!important;}
 }
 `;
 
@@ -2936,7 +2937,7 @@ export default function WanderplanCalendar() {
               />
             </div>
             <div
-              className="trip-detail-panel"
+              className={`trip-detail-panel${selectedTrip ? " has-trip" : ""}`}
               style={{
                 width: 300,
                 flexShrink: 0,
