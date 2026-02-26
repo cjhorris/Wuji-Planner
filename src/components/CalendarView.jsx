@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MONTHS, DAYS_SHORT } from "../constants";
 import { sameD, inRange } from "../utils/helpers";
 
-export default function CalendarView({ trips, onSelectDate, onSelectTrip }) {
+export default function CalendarView({ trips, onSelectDate, onSelectTrip, viewYear, viewMonth, onNavChange }) {
   const today = new Date();
-  const [vy, setVY] = useState(today.getFullYear());
-  const [vm, setVM] = useState(today.getMonth());
+  const [vy, setVY] = useState(viewYear ?? today.getFullYear());
+  const [vm, setVM] = useState(viewMonth ?? today.getMonth());
   const [sel, setSel] = useState(today);
+
+  useEffect(() => {
+    if (viewYear != null) setVY(viewYear);
+    if (viewMonth != null) setVM(viewMonth);
+  }, [viewYear, viewMonth]);
   const first = new Date(vy, vm, 1).getDay(),
     dim = new Date(vy, vm + 1, 0).getDate(),
     dimPrev = new Date(vy, vm, 0).getDate(),
@@ -24,16 +29,16 @@ export default function CalendarView({ trips, onSelectDate, onSelectTrip }) {
     cells.push({ d: n, cur: false, date: new Date(vy, vm + 1, n) });
   }
   function prev() {
-    if (vm === 0) {
-      setVM(11);
-      setVY(vy - 1);
-    } else setVM(vm - 1);
+    const ny = vm === 0 ? vy - 1 : vy;
+    const nm = vm === 0 ? 11 : vm - 1;
+    setVY(ny); setVM(nm);
+    onNavChange?.(ny, nm);
   }
   function next() {
-    if (vm === 11) {
-      setVM(0);
-      setVY(vy + 1);
-    } else setVM(vm + 1);
+    const ny = vm === 11 ? vy + 1 : vy;
+    const nm = vm === 11 ? 0 : vm + 1;
+    setVY(ny); setVM(nm);
+    onNavChange?.(ny, nm);
   }
   return (
     <div
@@ -102,6 +107,7 @@ export default function CalendarView({ trips, onSelectDate, onSelectTrip }) {
             setVM(today.getMonth());
             setSel(today);
             onSelectDate(today);
+            onNavChange?.(today.getFullYear(), today.getMonth());
           }}
           style={{
             padding: "5px 12px",

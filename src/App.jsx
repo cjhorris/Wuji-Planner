@@ -504,6 +504,9 @@ export default function WanderplanCalendar() {
                 trips={trips}
                 onSelectDate={handleDateSelect}
                 onSelectTrip={handleSelectTrip}
+                viewYear={miniYear}
+                viewMonth={miniMonth}
+                onNavChange={(y, m) => { setMY(y); setMM(m); }}
               />
             </div>
             <div
