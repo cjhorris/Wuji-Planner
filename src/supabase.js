@@ -9,4 +9,5 @@ if (!url || !key) {
   );
 }
 
-export const supabase = createClient(url ?? "", key ?? "");
+// Guard against empty strings — createClient throws if URL is falsy
+export const supabase = url && key ? createClient(url, key) : null;

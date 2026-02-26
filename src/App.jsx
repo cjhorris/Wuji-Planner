@@ -2462,7 +2462,7 @@ export default function WanderplanCalendar() {
       const ownedIds = getOwnedIds();
       const idsToFetch = [...new Set([...ownedIds, shareId].filter(Boolean))];
 
-      if (idsToFetch.length === 0) { setLoading(false); return; }
+      if (idsToFetch.length === 0 || !supabase) { setLoading(false); return; }
 
       const { data, error } = await supabase
         .from("trips")
@@ -2493,12 +2493,14 @@ export default function WanderplanCalendar() {
 
   // ── Supabase write helpers ──────────────────────────────────────────────────
   async function saveTrip(trip) {
+    if (!supabase) return;
     const { error } = await supabase
       .from("trips")
       .upsert({ id: trip.id, data: serializeTrip(trip), updated_at: new Date().toISOString() });
     if (error) console.error("Save error:", error);
   }
   async function removeTripFromDB(id) {
+    if (!supabase) return;
     const { error } = await supabase.from("trips").delete().eq("id", id);
     if (error) console.error("Delete error:", error);
   }
