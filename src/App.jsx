@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import Modal from "./components/Modal";
 import Btn from "./components/Btn";
+import { supabase } from "./supabase";
 
 // ─── GLOBAL CSS ───────────────────────────────────────────────────────────────
 const G = `
@@ -25,191 +26,6 @@ button{font-family:'Syne',sans-serif;font-size:15px;color:#f5f6fa;background:#23
 .tab-btn:hover{background:#23253a!important;color:#e8a44a!important;}
 .del-btn:hover{opacity:1!important;}
 `;
-
-// ─── SEED DATA ────────────────────────────────────────────────────────────────
-const INIT_TRIPS = [
-  {
-    id: "t1",
-    name: "Bali & Lombok",
-    emoji: "🌴",
-    color: "#e8a44a",
-    textColor: "#0f1117",
-    dates: { start: new Date(2026, 5, 12), end: new Date(2026, 5, 22) },
-    travelers: 2,
-    status: "upcoming",
-    flights: [
-      {
-        id: "f1",
-        type: "outbound",
-        airline: "Singapore Airlines",
-        flightNo: "SQ 947",
-        from: {
-          code: "SIN",
-          city: "Singapore",
-          time: "08:15",
-          date: new Date(2026, 5, 12),
-        },
-        to: {
-          code: "DPS",
-          city: "Denpasar",
-          time: "11:45",
-          date: new Date(2026, 5, 12),
-        },
-        duration: "3h 30m",
-        class: "Economy",
-        seat: "24A/24B",
-        status: "confirmed",
-        price: 420,
-      },
-      {
-        id: "f2",
-        type: "return",
-        airline: "Singapore Airlines",
-        flightNo: "SQ 948",
-        from: {
-          code: "DPS",
-          city: "Denpasar",
-          time: "13:30",
-          date: new Date(2026, 5, 22),
-        },
-        to: {
-          code: "SIN",
-          city: "Singapore",
-          time: "17:00",
-          date: new Date(2026, 5, 22),
-        },
-        duration: "3h 30m",
-        class: "Economy",
-        seat: "22A/22B",
-        status: "confirmed",
-        price: 420,
-      },
-    ],
-    hotels: [
-      {
-        id: "h1",
-        name: "Capella Ubud",
-        location: "Ubud, Bali",
-        checkin: new Date(2026, 5, 12),
-        checkout: new Date(2026, 5, 17),
-        nights: 5,
-        roomType: "Rainforest Suite",
-        rating: 5,
-        price: 1850,
-        confirmation: "CAP-293847",
-        amenities: ["Pool", "Spa", "Breakfast"],
-      },
-      {
-        id: "h2",
-        name: "Amanjiwo",
-        location: "Lombok",
-        checkin: new Date(2026, 5, 17),
-        checkout: new Date(2026, 5, 22),
-        nights: 5,
-        roomType: "Garden Suite",
-        rating: 5,
-        price: 2200,
-        confirmation: "AMJ-748291",
-        amenities: ["Private Pool", "Beach", "All Meals"],
-      },
-    ],
-    itinerary: [
-      {
-        id: "d1",
-        day: 1,
-        date: new Date(2026, 5, 12),
-        title: "Arrival in Bali",
-        events: [
-          {
-            id: "e1",
-            time: "11:45",
-            type: "flight",
-            icon: "✈️",
-            label: "Land at Ngurah Rai Airport",
-          },
-          {
-            id: "e2",
-            time: "15:00",
-            type: "checkin",
-            icon: "🏨",
-            label: "Check-in Capella Ubud",
-          },
-          {
-            id: "e3",
-            time: "18:00",
-            type: "food",
-            icon: "🍽",
-            label: "Welcome dinner at Locavore",
-          },
-        ],
-      },
-      {
-        id: "d2",
-        day: 2,
-        date: new Date(2026, 5, 13),
-        title: "Ubud Temples & Rice Terraces",
-        events: [
-          {
-            id: "e4",
-            time: "07:00",
-            type: "activity",
-            icon: "🌅",
-            label: "Sunrise at Tegallalang",
-          },
-          {
-            id: "e5",
-            time: "10:00",
-            type: "activity",
-            icon: "🛕",
-            label: "Tirta Empul Temple",
-          },
-          {
-            id: "e6",
-            time: "19:30",
-            type: "activity",
-            icon: "🎭",
-            label: "Kecak Fire Dance",
-          },
-        ],
-      },
-      {
-        id: "d3",
-        day: 3,
-        date: new Date(2026, 5, 14),
-        title: "Wellness Day",
-        events: [
-          {
-            id: "e7",
-            time: "09:00",
-            type: "activity",
-            icon: "🧘",
-            label: "Yoga at The Yoga Barn",
-          },
-          {
-            id: "e8",
-            time: "14:00",
-            type: "activity",
-            icon: "💆",
-            label: "4hr Balinese Spa",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "t2",
-    name: "Tokyo Winter",
-    emoji: "🗼",
-    color: "#6b7fff",
-    textColor: "#fff",
-    dates: { start: new Date(2026, 11, 20), end: new Date(2026, 11, 30) },
-    travelers: 1,
-    status: "planning",
-    flights: [],
-    hotels: [],
-    itinerary: [],
-  },
-];
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 const MONTHS = [
@@ -246,6 +62,32 @@ const sameD = (a, b) =>
 const inRange = (d, s, e) => d >= s && d <= e;
 const nightsBetween = (a, b) =>
   Math.max(1, Math.round((new Date(b) - new Date(a)) / 86400000));
+
+// ─── SUPABASE HELPERS ─────────────────────────────────────────────────────────
+const DATE_KEYS = new Set(["start", "end", "date", "checkin", "checkout"]);
+function serializeTrip(trip) {
+  return JSON.parse(
+    JSON.stringify(trip, (k, v) => (v instanceof Date ? v.toISOString() : v)),
+  );
+}
+function deserializeTrip(raw) {
+  return JSON.parse(JSON.stringify(raw), (k, v) => {
+    if (DATE_KEYS.has(k) && typeof v === "string" && /^\d{4}-\d{2}-\d{2}/.test(v))
+      return new Date(v);
+    return v;
+  });
+}
+const LS_KEY = "wuji_trip_ids";
+function getOwnedIds() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch { return []; }
+}
+function addOwnedId(id) {
+  const ids = getOwnedIds();
+  if (!ids.includes(id)) localStorage.setItem(LS_KEY, JSON.stringify([...ids, id]));
+}
+function removeOwnedId(id) {
+  localStorage.setItem(LS_KEY, JSON.stringify(getOwnedIds().filter((x) => x !== id)));
+}
 
 const TYPE_META = {
   flight: { color: "#3b82f6", icon: "✈️", label: "Flight" },
@@ -1457,7 +1299,7 @@ function CalendarView({ trips, onSelectDate, onSelectTrip }) {
 }
 
 // ─── TRIP DETAIL PANEL ────────────────────────────────────────────────────────
-function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip }) {
+function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) {
   const [tab, setTab] = useState("itinerary");
   const [expDays, setExpDays] = useState({});
   const [modal, setModal] = useState(null);
@@ -1612,6 +1454,22 @@ function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip }) {
             </div>
           </div>
           <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
+            <button
+              onClick={() => onShareTrip(trip.id)}
+              title="Copy share link"
+              style={{
+                width: 26,
+                height: 26,
+                borderRadius: 7,
+                background: "#1c1f2e",
+                border: "none",
+                color: "#777",
+                cursor: "pointer",
+                fontSize: 11,
+              }}
+            >
+              🔗
+            </button>
             <button
               onClick={() => setModal({ type: "editTrip" })}
               title="Edit trip settings"
@@ -2584,13 +2442,66 @@ function NewTripModal({ onClose, onAdd }) {
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
 export default function WanderplanCalendar() {
   const today = new Date();
-  const [trips, setTrips] = useState(INIT_TRIPS);
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [shareMsg, setShareMsg] = useState("");
   const [activeView, setActiveView] = useState("calendar");
   const [selectedTrip, setSel] = useState(null);
   const [selectedDate, setSelDate] = useState(today);
   const [miniYear, setMY] = useState(today.getFullYear());
   const [miniMonth, setMM] = useState(today.getMonth());
   const [showNew, setShowNew] = useState(false);
+  const selRef = useRef(null);
+  selRef.current = selectedTrip;
+
+  // ── Load trips from Supabase on mount ──────────────────────────────────────
+  useEffect(() => {
+    async function loadTrips() {
+      const params = new URLSearchParams(window.location.search);
+      const shareId = params.get("share");
+      const ownedIds = getOwnedIds();
+      const idsToFetch = [...new Set([...ownedIds, shareId].filter(Boolean))];
+
+      if (idsToFetch.length === 0) { setLoading(false); return; }
+
+      const { data, error } = await supabase
+        .from("trips")
+        .select("data")
+        .in("id", idsToFetch);
+
+      if (error) { console.error("Load error:", error); setLoading(false); return; }
+
+      const loaded = (data || []).map((row) => deserializeTrip(row.data));
+      setTrips(loaded);
+
+      if (shareId) {
+        const shared = loaded.find((t) => t.id === shareId);
+        if (shared) {
+          addOwnedId(shareId);
+          setSel(shared);
+          setSelDate(shared.dates.start);
+          setMY(shared.dates.start.getFullYear());
+          setMM(shared.dates.start.getMonth());
+        }
+        // Clean ?share= from URL without reloading
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+      setLoading(false);
+    }
+    loadTrips();
+  }, []);
+
+  // ── Supabase write helpers ──────────────────────────────────────────────────
+  async function saveTrip(trip) {
+    const { error } = await supabase
+      .from("trips")
+      .upsert({ id: trip.id, data: serializeTrip(trip), updated_at: new Date().toISOString() });
+    if (error) console.error("Save error:", error);
+  }
+  async function removeTripFromDB(id) {
+    const { error } = await supabase.from("trips").delete().eq("id", id);
+    if (error) console.error("Delete error:", error);
+  }
 
   const dateTrips = useMemo(
     () =>
@@ -2605,10 +2516,13 @@ export default function WanderplanCalendar() {
   function updateTrip(updated) {
     setTrips((ts) => ts.map((t) => (t.id === updated.id ? updated : t)));
     setSel(updated);
+    saveTrip(updated);
   }
   function deleteTrip(id) {
     setTrips((ts) => ts.filter((t) => t.id !== id));
     setSel(null);
+    removeOwnedId(id);
+    removeTripFromDB(id);
   }
   function addTrip(t) {
     setTrips((ts) => [...ts, t]);
@@ -2617,6 +2531,15 @@ export default function WanderplanCalendar() {
     setSelDate(t.dates.start);
     setMY(t.dates.start.getFullYear());
     setMM(t.dates.start.getMonth());
+    addOwnedId(t.id);
+    saveTrip(t);
+  }
+  function handleShare(tripId) {
+    const url = `${window.location.origin}${window.location.pathname}?share=${tripId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setShareMsg("Link copied!");
+      setTimeout(() => setShareMsg(""), 2500);
+    });
   }
   function handleDateSelect(date) {
     setSelDate(date);
@@ -2646,6 +2569,30 @@ export default function WanderplanCalendar() {
       }}
     >
       <style>{G}</style>
+
+      {/* Loading overlay */}
+      {loading && (
+        <div style={{
+          position: "fixed", inset: 0, background: "#0f1117",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 9999, flexDirection: "column", gap: 12,
+        }}>
+          <div style={{ fontSize: 28 }}>🌍</div>
+          <div style={{ fontSize: 12, color: "#3a3d4e", fontWeight: 700 }}>Loading trips…</div>
+        </div>
+      )}
+
+      {/* Share toast */}
+      {shareMsg && (
+        <div style={{
+          position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
+          background: "#1c1f2e", color: "#e8a44a", padding: "8px 18px",
+          borderRadius: 8, fontSize: 12, fontWeight: 700, zIndex: 9999,
+          border: "1px solid #e8a44a40", animation: "fadeUp .2s ease",
+        }}>
+          🔗 {shareMsg}
+        </div>
+      )}
 
       {/* Header */}
       <header
@@ -2973,6 +2920,7 @@ export default function WanderplanCalendar() {
                   onClose={() => setSel(null)}
                   onUpdateTrip={updateTrip}
                   onDeleteTrip={deleteTrip}
+                  onShareTrip={handleShare}
                 />
               ) : (
                 <div
