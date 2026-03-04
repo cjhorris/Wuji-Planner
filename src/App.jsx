@@ -30,12 +30,18 @@ button{font-family:'Syne',sans-serif;font-size:15px;color:#e8e6f0;background:#27
 .btn-danger:hover{background:#7f1d1d!important;color:#fff!important;}
 .tab-btn:hover{background:#272b40!important;color:#e8a44a!important;}
 .del-btn:hover{opacity:1!important;}
+.cal-event{font-size:11px;line-height:1.3;}
+.cal-event-label{display:inline;}
+.cal-day-lbl{font-size:11px;}
 @media(max-width:700px){
   body{overflow:auto;}
   .app-sidebar{display:none!important;}
   .trip-detail-panel{display:none!important;}
   .trip-detail-panel.has-trip{display:flex!important;flex-direction:column!important;position:fixed!important;inset:0!important;width:100%!important;z-index:200!important;background:#1d2030!important;}
   .trip-detail-panel .tab-btn{font-size:13px!important;padding:9px 6px!important;min-height:40px!important;}
+  .cal-event{font-size:13px!important;justify-content:center!important;padding:2px 3px!important;}
+  .cal-event-label{display:none!important;}
+  .cal-day-lbl{font-size:12px!important;}
 }
 `;
 

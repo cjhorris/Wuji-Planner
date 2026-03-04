@@ -61,7 +61,7 @@ export default function CalendarView({ trips, onSelectDate, onSelectTrip, viewYe
             onClick={next}
             style={{ width: 28, height: 28, borderRadius: 7, background: "#252840", border: "none", color: "#777", cursor: "pointer", fontSize: 13 }}
           >›</button>
-          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, fontWeight: 700, color: "#f0ece4" }}>
+          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, fontWeight: 700, color: "#f0ece4" }}>
             {MONTHS[vm]} <span style={{ color: "#2a2d3a" }}>{vy}</span>
           </div>
         </div>
@@ -80,7 +80,7 @@ export default function CalendarView({ trips, onSelectDate, onSelectTrip, viewYe
       {/* Day labels */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", borderBottom: "1px solid #30354f", flexShrink: 0 }}>
         {DAYS_SHORT.map((d) => (
-          <div key={d} style={{ padding: "6px 0", textAlign: "center", fontSize: 9, fontWeight: 800, color: "#2a2d3a", letterSpacing: 1, textTransform: "uppercase" }}>
+          <div key={d} className="cal-day-lbl" style={{ padding: "7px 0", textAlign: "center", fontWeight: 800, color: "#4a5060", letterSpacing: 1, textTransform: "uppercase" }}>
             {d}
           </div>
         ))}
@@ -147,11 +147,11 @@ export default function CalendarView({ trips, onSelectDate, onSelectTrip, viewYe
               {/* Day number */}
               <div
                 style={{
-                  width: 20, height: 20, borderRadius: 5,
+                  width: 24, height: 24, borderRadius: 6,
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 10, fontWeight: isToday ? 800 : 400, marginBottom: 2, flexShrink: 0,
+                  fontSize: 12, fontWeight: isToday ? 800 : 500, marginBottom: 3, flexShrink: 0,
                   background: isToday ? "#e8a44a" : "transparent",
-                  color: isToday ? "#171a28" : cell.cur ? "#aaa" : "#2a2d3a",
+                  color: isToday ? "#171a28" : cell.cur ? "#c0bdb8" : "#2a2d3a",
                 }}
               >
                 {cell.d}
@@ -166,11 +166,11 @@ export default function CalendarView({ trips, onSelectDate, onSelectTrip, viewYe
                     key={t.id}
                     onClick={(e) => { e.stopPropagation(); onSelectTrip(t); }}
                     style={{
-                      height: 3,
-                      borderRadius: isStart ? "2px 0 0 2px" : isEnd ? "0 2px 2px 0" : "0",
+                      height: 4,
+                      borderRadius: isStart ? "3px 0 0 3px" : isEnd ? "0 3px 3px 0" : "0",
                       background: t.color,
-                      marginBottom: 2,
-                      opacity: 0.85,
+                      marginBottom: 3,
+                      opacity: 0.9,
                       marginLeft: isStart ? 0 : -5,
                       marginRight: isEnd ? 0 : -5,
                       cursor: "pointer",
@@ -184,33 +184,33 @@ export default function CalendarView({ trips, onSelectDate, onSelectTrip, viewYe
               {visible.map((ev, idx) => (
                 <div
                   key={idx}
+                  className="cal-event"
                   onClick={(e) => { e.stopPropagation(); onSelectTrip(ev.trip); }}
                   title={ev.label}
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 2,
-                    fontSize: 9,
-                    background: `${ev.color}22`,
+                    gap: 3,
+                    background: `${ev.color}25`,
                     color: ev.color,
-                    borderRadius: 3,
-                    padding: "1px 4px",
-                    marginBottom: 1,
+                    borderRadius: 4,
+                    padding: "2px 5px",
+                    marginBottom: 2,
                     overflow: "hidden",
                     cursor: "pointer",
                     flexShrink: 0,
                     minWidth: 0,
                   }}
                 >
-                  <span style={{ flexShrink: 0 }}>{ev.icon}</span>
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <span style={{ flexShrink: 0, fontSize: 12 }}>{ev.icon}</span>
+                  <span className="cal-event-label" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 600 }}>
                     {ev.label}
                   </span>
                 </div>
               ))}
 
               {overflow > 0 && (
-                <div style={{ fontSize: 8, color: "#7a8090", paddingLeft: 2, flexShrink: 0 }}>
+                <div style={{ fontSize: 10, color: "#7a8090", paddingLeft: 3, flexShrink: 0 }}>
                   +{overflow} more
                 </div>
               )}
