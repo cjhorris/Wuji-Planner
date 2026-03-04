@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Btn from "./Btn";
 import EditTripModal from "./EditTripModal";
 import FlightModal from "./FlightModal";
@@ -8,10 +8,26 @@ import ActivityModal from "./ActivityModal";
 import { TYPE_META } from "../constants";
 import { fmtS } from "../utils/helpers";
 
-export default function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip }) {
+export default function TripDetail({ trip, onClose, onUpdateTrip, onDeleteTrip, onShareTrip, pendingModal, onPendingModalClear }) {
   const [tab, setTab] = useState("itinerary");
   const [expDays, setExpDays] = useState({});
   const [modal, setModal] = useState(null);
+
+  useEffect(() => {
+    if (!pendingModal) return;
+    if (pendingModal.kind === "flight") {
+      setTab("flights");
+      setModal({ type: "editFlight", flight: pendingModal.item });
+    } else if (pendingModal.kind === "hotel") {
+      setTab("hotels");
+      setModal({ type: "editHotel", hotel: pendingModal.item });
+    } else if (pendingModal.kind === "activity") {
+      setTab("itinerary");
+      setExpDays((e) => ({ ...e, [pendingModal.dayId]: true }));
+      setModal({ type: "editActivity", dayId: pendingModal.dayId, event: pendingModal.item });
+    }
+    onPendingModalClear?.();
+  }, [pendingModal]);
 
   function updateTrip(patch) {
     onUpdateTrip({ ...trip, ...patch });

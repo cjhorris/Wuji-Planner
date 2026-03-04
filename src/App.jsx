@@ -30,7 +30,8 @@ button{font-family:'Syne',sans-serif;font-size:15px;color:#e8e6f0;background:#27
 .btn-danger:hover{background:#7f1d1d!important;color:#fff!important;}
 .tab-btn:hover{background:#272b40!important;color:#e8a44a!important;}
 .del-btn:hover{opacity:1!important;}
-.cal-event{font-size:11px;line-height:1.3;}
+.cal-event{font-size:11px;line-height:1.3;transition:filter .1s,transform .1s;}
+.cal-event:hover{filter:brightness(1.3);transform:scaleY(1.04);}
 .cal-event-label{display:inline;}
 .cal-day-lbl{font-size:11px;}
 @media(max-width:700px){
@@ -57,6 +58,7 @@ export default function WanderplanCalendar() {
   const [miniYear, setMY] = useState(today.getFullYear());
   const [miniMonth, setMM] = useState(today.getMonth());
   const [showNew, setShowNew] = useState(false);
+  const [pendingModal, setPendingModal] = useState(null);
   const selRef = useRef(null);
   selRef.current = selectedTrip;
 
@@ -162,6 +164,10 @@ export default function WanderplanCalendar() {
     setSelDate(t.dates.start);
     setMY(t.dates.start.getFullYear());
     setMM(t.dates.start.getMonth());
+  }
+  function handleOpenItem(trip, kind, item, dayId) {
+    handleSelectTrip(trip);
+    setPendingModal({ kind, item, dayId });
   }
 
   return (
@@ -513,6 +519,7 @@ export default function WanderplanCalendar() {
                 viewYear={miniYear}
                 viewMonth={miniMonth}
                 onNavChange={(y, m) => { setMY(y); setMM(m); }}
+                onOpenItem={handleOpenItem}
               />
             </div>
             <div
@@ -534,6 +541,8 @@ export default function WanderplanCalendar() {
                   onUpdateTrip={updateTrip}
                   onDeleteTrip={deleteTrip}
                   onShareTrip={handleShare}
+                  pendingModal={pendingModal}
+                  onPendingModalClear={() => setPendingModal(null)}
                 />
               ) : (
                 <div

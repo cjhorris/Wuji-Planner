@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { MONTHS, DAYS_SHORT, TYPE_META } from "../constants";
 import { sameD, inRange } from "../utils/helpers";
 
-export default function CalendarView({ trips, onSelectDate, onSelectTrip, viewYear, viewMonth, onNavChange }) {
+export default function CalendarView({ trips, onSelectDate, onSelectTrip, viewYear, viewMonth, onNavChange, onOpenItem }) {
   const today = new Date();
   const [vy, setVY] = useState(viewYear ?? today.getFullYear());
   const [vm, setVM] = useState(viewMonth ?? today.getMonth());
@@ -100,13 +100,13 @@ export default function CalendarView({ trips, onSelectDate, onSelectTrip, viewYe
             const evts = [];
             t.flights.forEach((f) => {
               if (sameD(f.from.date, cell.date))
-                evts.push({ icon: "🛫", label: `${f.from.code}→${f.to.code}`, color: "#3b82f6", trip: t });
+                evts.push({ icon: "🛫", label: `${f.from.code}→${f.to.code}`, color: "#3b82f6", trip: t, kind: "flight", item: f });
               else if (sameD(f.to.date, cell.date))
-                evts.push({ icon: "🛬", label: `${f.from.code}→${f.to.code}`, color: "#10b981", trip: t });
+                evts.push({ icon: "🛬", label: `${f.from.code}→${f.to.code}`, color: "#10b981", trip: t, kind: "flight", item: f });
             });
             t.hotels.forEach((h) => {
               if (sameD(h.checkin, cell.date))
-                evts.push({ icon: "🏨", label: h.name, color: "#f59e0b", trip: t });
+                evts.push({ icon: "🏨", label: h.name, color: "#f59e0b", trip: t, kind: "hotel", item: h });
             });
             t.itinerary
               .filter((d) => sameD(d.date, cell.date))
@@ -117,6 +117,9 @@ export default function CalendarView({ trips, onSelectDate, onSelectTrip, viewYe
                     label: ev.label,
                     color: TYPE_META[ev.type]?.color || "#8b5cf6",
                     trip: t,
+                    kind: "activity",
+                    item: ev,
+                    dayId: d.id,
                   })
                 )
               );
@@ -185,7 +188,7 @@ export default function CalendarView({ trips, onSelectDate, onSelectTrip, viewYe
                 <div
                   key={idx}
                   className="cal-event"
-                  onClick={(e) => { e.stopPropagation(); onSelectTrip(ev.trip); }}
+                  onClick={(e) => { e.stopPropagation(); onOpenItem ? onOpenItem(ev.trip, ev.kind, ev.item, ev.dayId) : onSelectTrip(ev.trip); }}
                   title={ev.label}
                   style={{
                     display: "flex",
